@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="240px" height="240px" viewBox="0 0 240 240" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#2196F3"/>
+            <stop offset="100%" style="stop-color:#1976D2"/>
+        </linearGradient>
+    </defs>
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <circle fill="url(#gradient)" cx="120" cy="120" r="110"></circle>
+        <path d="M120,40 L120,200" stroke="white" stroke-width="15" stroke-linecap="round"></path>
+        <path d="M40,120 L200,120" stroke="white" stroke-width="15" stroke-linecap="round"></path>
+        <text x="50%" y="50%" font-family="Arial" font-size="40" fill="white" text-anchor="middle" dominant-baseline="middle">
+            <tspan x="50%" y="50%">SN</tspan>
+        </text>
+    </g>
+</svg>
