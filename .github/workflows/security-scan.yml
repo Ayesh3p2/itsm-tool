@@ -1,0 +1,60 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      # Run Snyk security scan
+      - name: Run Snyk security scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+
+      # Run OWASP Dependency Check
+      - name: Run OWASP Dependency Check
+        uses: dependency-check/dependency-check-action@v2
+        with:
+          path: .
+          format: 'HTML'
+          suppressionFile: 'suppression.xml'
+
+      # Run SonarQube
+      - name: Run SonarQube
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
+          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+
+      # Run Trivy for container scanning
+      - name: Run Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          format: 'template'
+          template: '@template/table'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+          skip-update: true
+          quiet: true
+
+      # Run CodeQL
+      - name: Run CodeQL
+        uses: github/codeql-action/analyze@v2
+        with:
+          category: '/security'
+          languages: 'javascript'
+          queries: 'security-extended,security-and-quality'
+          autobuild: true
