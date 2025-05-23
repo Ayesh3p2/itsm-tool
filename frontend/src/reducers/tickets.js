@@ -15,7 +15,55 @@ const initialState = {
     error: null,
 };
 
-export default (state = initialState, action) => {
+const ticketsReducer = (state = initialState, action) => {
+    switch (action.type) {
+        case FETCH_TICKETS:
+            return {
+                ...state,
+                tickets: action.payload,
+                loading: false,
+            };
+        case FETCH_TICKET:
+            return {
+                ...state,
+                ticket: action.payload,
+                loading: false,
+            };
+        case CREATE_TICKET:
+            return {
+                ...state,
+                tickets: [...state.tickets, action.payload],
+                loading: false,
+            };
+        case UPDATE_TICKET:
+            return {
+                ...state,
+                tickets: state.tickets.map(ticket =>
+                    ticket._id === action.payload._id ? action.payload : ticket
+                ),
+                loading: false,
+            };
+        case DELETE_TICKET:
+            return {
+                ...state,
+                tickets: state.tickets.filter(ticket => ticket._id !== action.payload),
+                loading: false,
+            };
+        case APPROVE_TICKET:
+        case REJECT_TICKET:
+            return {
+                ...state,
+                tickets: state.tickets.map(ticket =>
+                    ticket._id === action.payload._id ? action.payload : ticket
+                ),
+                loading: false,
+            };
+        default:
+            return state;
+    }
+};
+
+export { ticketsReducer };
     switch (action.type) {
         case FETCH_TICKETS:
             return {
