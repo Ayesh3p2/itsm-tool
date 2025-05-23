@@ -1,8 +1,8 @@
-const speakeasy = require('speakeasy');
-const qrcode = require('qrcode');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
+import speakeasy from 'speakeasy';
+import qrcode from 'qrcode';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
 // Password complexity requirements
 const validatePassword = (password) => {
@@ -97,17 +97,21 @@ const generateSecureToken = (length = 32) => {
     return crypto.randomBytes(length).toString('hex');
 };
 
+// Token generation
+const generateToken = (payload, expiresIn = '24h') => {
+    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn });
+};
+
 // Password hashing
-const hashPassword = async (password) => {
-    const salt = await bcrypt.genSalt(12);
-    return bcrypt.hash(password, salt);
+const hashPassword = (password) => {
+    return bcrypt.hashSync(password, 10);
 };
 
 const comparePassword = async (password, hash) => {
-    return bcrypt.compare(password, hash);
+    return await bcrypt.compare(password, hash);
 };
 
-module.exports = {
+export {
     validatePassword,
     generate2FA,
     verify2FA,
@@ -115,5 +119,6 @@ module.exports = {
     validateSession,
     generateSecureToken,
     hashPassword,
-    comparePassword
+    comparePassword,
+    generateToken
 };

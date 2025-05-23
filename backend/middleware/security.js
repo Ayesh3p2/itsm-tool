@@ -1,9 +1,9 @@
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const crypto = require('crypto');
-const cors = require('cors');
-const { createLogger, format, transports } = require('winston');
-const promClient = require('prom-client');
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import crypto from 'crypto';
+import cors from 'cors';
+import { createLogger, format, transports } from 'winston';
+import promClient from 'prom-client';
 
 // Security logger
 const logger = createLogger({
@@ -47,6 +47,11 @@ const securityMetrics = {
         name: 'security_csrf_attempts',
         help: 'Number of CSRF attempts detected',
         labelNames: ['method']
+    }),
+    sqlInjectionAttempts: new promClient.Counter({
+        name: 'security_sql_injection_attempts',
+        help: 'Number of SQL injection attempts detected',
+        labelNames: ['type']
     })
 };
 

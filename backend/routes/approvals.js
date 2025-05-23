@@ -1,11 +1,11 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const auth = require('../middleware/auth');
-const canApproveTicket = require('../middleware/approval');
-const Ticket = require('../models/Ticket');
-const User = require('../models/User');
-const { sendApprovalNotification, sendRejectionNotification } = require('../config/email');
-const { sendApprovalNotification: sendSlackApproval, sendRejectionNotification: sendSlackRejection } = require('../config/slack');
+import auth from '../middleware/auth.js';
+import canApproveTicket from '../middleware/approval.js';
+import { Ticket } from '../models/Ticket.js';
+import { User } from '../models/User.js';
+import { sendApprovalNotification as emailApproval, sendRejectionNotification as emailRejection } from '../config/email.js';
+import { sendApprovalNotification as slackApproval, sendRejectionNotification as slackRejection } from '../config/slack.js';
 
 // Get tickets pending approval for current user
 router.get('/pending', auth, async (req, res) => {
@@ -86,8 +86,8 @@ router.post('/:ticketId/approve', [auth, canApproveTicket], async (req, res) => 
         await ticket.save();
         
         // Send notifications
-        await sendApprovalNotification(ticket, req.user);
-        await sendSlackApproval(ticket, req.user);
+        await emailApproval(req.user, ticket, comments, 'email');
+        slackApproval(req.user, ticket, comments);
 
         res.json({
             message: 'Ticket approved successfully',
@@ -150,8 +150,8 @@ router.post('/:ticketId/reject', [auth, canApproveTicket], async (req, res) => {
         await ticket.save();
         
         // Send notifications
-        await sendRejectionNotification(ticket, req.user);
-        await sendSlackRejection(ticket, req.user);
+        await emailRejection(req.user, ticket, reason, comments, 'email');
+        slackRejection(req.user, ticket, reason, comments);
 
         res.json({
             message: 'Ticket rejected successfully',
@@ -218,4 +218,4 @@ router.get('/stats', auth, async (req, res) => {
     }
 });
 
-module.exports = router;
+export { router as default };

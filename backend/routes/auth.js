@@ -1,9 +1,11 @@
-const express = require('express');
-const router = express.Router();
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-const security = require('../utils/security');
-const { check, validationResult } = require('express-validator');
+import express from 'express';
+import { Router } from 'express';
+import jwt from 'jsonwebtoken';
+import { User } from '../models/User.js';
+import { validatePassword, generate2FA, verify2FA, generateSessionToken, validateSession, generateSecureToken, hashPassword, comparePassword } from '../utils/security.js';
+import { check, validationResult } from 'express-validator';
+
+const router = Router();
 
 // Register route
 router.post('/register', [
@@ -215,4 +217,4 @@ router.post('/logout', async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;

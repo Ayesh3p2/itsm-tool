@@ -1,7 +1,9 @@
-const express = require('express');
-const router = express.Router();
-const auth = require('../middleware/auth');
-const Ticket = require('../models/Ticket');
+import express from 'express';
+import { Router } from 'express';
+import auth from '../middleware/auth.js';
+import { Ticket } from '../models/Ticket.js';
+
+const router = Router();
 
 // Create new ticket
 router.post('/', auth, async (req, res) => {
@@ -46,4 +48,4 @@ router.get('/:id', [auth], async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;

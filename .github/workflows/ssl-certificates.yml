@@ -1,0 +1,58 @@
+name: SSL Certificates Management
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'  # Run every Monday at midnight
+  workflow_dispatch:  # Allow manual trigger
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  manage-certificates:
+    runs-on: ubuntu-latest
+    env:
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+      DOMAIN: ${{ secrets.DOMAIN }}
+      ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+      FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+      MONGODB_SSL_CA: ${{ secrets.MONGODB_SSL_CA }}
+      MONGODB_SSL_CERT: ${{ secrets.MONGODB_SSL_CERT }}
+      MONGODB_SSL_KEY: ${{ secrets.MONGODB_SSL_KEY }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Google Cloud
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Setup SSL Certificates
+        run: |
+          gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
+          gcloud compute ssl-certificates list
+          gcloud compute ssl-certificates create my-ssl-cert \
+            --certificate=cert.pem \
+            --private-key=key.pem
+          openssl x509 -in /etc/ssl/certs/ca-certificates.crt -noout -issuer
+
+      - name: Renew SSL certificates
+        run: |
+          # Renew SSL certificates if needed
+          certbot renew --non-interactive
+
+      - name: Update MongoDB SSL certificates
+        run: |
+          # Update MongoDB SSL certificates
+          openssl x509 -in ${{ env.MONGODB_SSL_CA }} -noout -dates
+          openssl x509 -in ${{ env.MONGODB_SSL_CERT }} -noout -dates
+
+      - name: Update Firebase SSL certificates
+        run: |
+          # Update Firebase SSL certificates
+          firebase hosting:update-certs --project ${{ env.FIREBASE_PROJECT_ID }}

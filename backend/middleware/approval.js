@@ -1,5 +1,5 @@
-const User = require('../models/User');
-const Ticket = require('../models/Ticket');
+import { User } from '../models/User.js';
+import { Ticket } from '../models/Ticket.js';
 
 // Check if user has approval rights
 const hasApprovalRights = async (userId, approvalLevel) => {
@@ -99,4 +99,7 @@ const canApproveTicket = async (req, res, next) => {
     }
 };
 
-module.exports = canApproveTicket;
+export { canApproveTicket, hasApprovalRights, isTicketReadyForApproval };
+
+// Export default for compatibility
+export default canApproveTicket;

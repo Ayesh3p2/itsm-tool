@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const ipBlacklistSchema = new mongoose.Schema({
     ipAddress: {
@@ -44,4 +44,4 @@ const ipBlacklistSchema = new mongoose.Schema({
 // TTL index for automatic cleanup (keep records for 1 year)
 ipBlacklistSchema.index({ createdAt: 1 }, { expireAfterSeconds: 31536000 });
 
-module.exports = mongoose.model('IpBlacklist', ipBlacklistSchema);
+export const IpBlacklist = mongoose.model('IpBlacklist', ipBlacklistSchema);

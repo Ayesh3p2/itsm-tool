@@ -1,7 +1,7 @@
-const rateLimit = require('express-rate-limit');
-const IpBlacklist = require('../models/IpBlacklist');
-const AuditLog = require('../models/AuditLog');
-const security = require('../utils/security');
+import rateLimit from 'express-rate-limit';
+import { IpBlacklist } from '../models/IpBlacklist.js';
+import { AuditLog } from '../models/AuditLog.js';
+import { validatePassword, generateToken } from '../utils/security.js';
 
 // Rate limiting
 const apiLimiter = rateLimit({
@@ -160,7 +160,7 @@ const auditLogging = async (req, res, next) => {
     }
 };
 
-module.exports = {
+export {
     apiLimiter,
     checkIpBlacklist,
     ipRateLimit,

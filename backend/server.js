@@ -1,18 +1,19 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const passport = require('passport');
-const session = require('express-session');
-const { connectDB } = require('./config/db');
-const User = require('./models/User');
-const jwt = require('jsonwebtoken');
-const authRoutes = require('./routes/auth');
-const ticketRoutes = require('./routes/tickets');
-const slackRoutes = require('./routes/slack');
-const adminRoutes = require('./routes/admin');
-const approvalRoutes = require('./routes/approvals');
-const statsRoutes = require('./routes/stats');
-const securityMiddleware = require('./middleware/securityMiddleware');
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import passport from 'passport';
+import session from 'express-session';
+import { connectDB } from './config/db.js';
+import { User } from './models/User.js';
+import jwt from 'jsonwebtoken';
+import { default as authRoutes } from './routes/auth.js';
+import { default as ticketRoutes } from './routes/tickets.js';
+import { default as slackRoutes } from './routes/slack.js';
+import { default as adminRoutes, admin } from './routes/admin.js';
+import { default as approvalRoutes } from './routes/approvals.js';
+import { default as statsRoutes } from './routes/stats.js';
+import { default as securityRoutes } from './routes/security.js';
+import { apiLimiter, checkIpBlacklist, ipRateLimit, validateRequest, addSecurityHeaders, auditLogging } from './middleware/securityMiddleware.js';
 
 // Initialize security middleware
 const app = express();
@@ -75,17 +76,20 @@ app.use((req, res, next) => {
 });
 
 // Database connection
-connectDB().catch(err => {
-    console.error('Failed to connect to database:', err);
-});
+const { encryptData, decryptData, dbConnection } = await connectDB();
+if (!dbConnection) {
+    console.error('Failed to connect to database');
+    process.exit(1);
+}
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/slack', slackRoutes);
-app.use('/api/approvals', approvalRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/approvals', approvalRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/security', securityRoutes);
 
 // Google OAuth routes
 const { OAuth2Client } = require('google-auth-library');

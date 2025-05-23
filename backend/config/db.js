@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
-const crypto = require('crypto');
-const fs = require('fs');
+import mongoose from 'mongoose';
+import crypto from 'crypto';
+import fs from 'fs';
 
 // Initialize mongoose connection
 let dbConnection;
@@ -31,67 +31,70 @@ const connectDB = async () => {
             return dbConnection;
         }
 
-        // Read SSL certificates from file system
-        const ca = fs.readFileSync(process.env.MONGODB_SSL_CA);
-        const cert = fs.readFileSync(process.env.MONGODB_SSL_CERT);
-        const key = fs.readFileSync(process.env.MONGODB_SSL_KEY);
-        const pass = process.env.MONGODB_SSL_PASS;
+        // Read encrypted connection string
+        const encryptedUri = fs.readFileSync('.env', 'utf8');
+        const uri = decryptData(encryptedUri);
 
-        // Use test database if NODE_ENV is test
-        const uri = process.env.NODE_ENV === 'test' 
-            ? 'mongodb://localhost:27017/itsm-test' 
-            : process.env.MONGODB_URI;
-
-        const conn = await mongoose.connect(uri, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-            serverSelectionTimeoutMS: 5000,
-            ssl: true,
-            sslValidate: true,
-            sslCA: ca,
-            sslCert: cert,
-            sslKey: key,
-            sslPass: pass,
-            auth: {
-                user: process.env.MONGODB_USER,
-                password: process.env.MONGODB_PASS
-            },
-            tls: true,
-            tlsCAFile: process.env.MONGODB_SSL_CA,
-            tlsCertificateKeyFile: process.env.MONGODB_SSL_KEY,
-            tlsCertificateFile: process.env.MONGODB_SSL_CERT
-        });
-
-        // Add encryption middleware to mongoose
-        mongoose.set('debug', true);
-        mongoose.set('runValidators', true);
-        mongoose.set('strictQuery', true);
-
-        dbConnection = mongoose.connection;
-        console.log(`MongoDB Connected: ${conn.connection.host}`);
-        console.log('SSL/TLS connection established');
-        return { encryptData, decryptData, dbConnection };
-    } catch (error) {
-        console.error(`MongoDB Connection Error: ${error.message}`);
-        throw error;
-    }
-};
-
-// Export a function to close the connection
-const closeDB = async () => {
-    try {
-        if (dbConnection) {
-            await mongoose.connection.close();
-            console.log('MongoDB Connection Closed');
-            dbConnection = null;
+        if (!uri) {
+            throw new Error('Failed to decrypt MongoDB connection string');
         }
-    } catch (error) {
-        console.error(`Error closing MongoDB connection: ${error.message}`);
-        throw error;
+
+        // Connect with retry logic
+        const maxRetries = 3;
+        let retries = 0;
+
+        while (retries < maxRetries) {
+            try {
+                const conn = await mongoose.connect(uri, {
+                    useNewUrlParser: true,
+                    useUnifiedTopology: true,
+                    serverSelectionTimeoutMS: 5000,
+                    auth: {
+                        user: process.env.MONGODB_ATLAS_USER,
+                        password: process.env.MONGODB_ATLAS_PASS
+                    }
+                });
+
+                // Apply encryption middleware
+                mongoose.Schema.Types.String.set('encrypt', function() {
+                    return encryptData(this);
+                });
+
+                mongoose.Schema.Types.String.set('decrypt', function() {
+                    return decryptData(this);
+                });
+
+                console.log('MongoDB connected successfully');
+                dbConnection = conn;
+                return conn;
+            } catch (err) {
+                console.error(`Connection attempt ${retries + 1} failed:`, err.message);
+                if (retries === maxRetries - 1) {
+                    throw err;
+                }
+                retries++;
+                await new Promise(resolve => setTimeout(resolve, 1000 * retries));
+            }
+        }
+    } catch (err) {
+        console.error('MongoDB connection error:', err);
+        throw err;
     }
 };
 
-module.exports = { connectDB, closeDB };
+// Close connection
+const closeDB = async () => {
+    if (dbConnection) {
+        try {
+            await mongoose.connection.close();
+            console.log('MongoDB connection closed');
+        } catch (err) {
+            console.error('Error closing MongoDB connection:', err);
+        }
+    }
+};
+
+export { connectDB, closeDB };
 
 // Close connection on process exit
 process.on('SIGINT', async () => {

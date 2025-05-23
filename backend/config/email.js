@@ -1,22 +1,23 @@
-const nodemailer = require('nodemailer');
+// Email configuration temporarily disabled
+import nodemailer from 'nodemailer';
 
 // Create reusable transporter
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
-});
+// const transporter = nodemailer.createTransport({
+//     service: 'gmail',
+//     auth: {
+//         user: process.env.EMAIL_USER,
+//         pass: process.env.EMAIL_PASS
+//     }
+// });
 
 // Test connection
-transporter.verify((error, success) => {
-    if (error) {
-        console.log('Email service error:', error);
-    } else {
-        console.log('Email service ready:', success);
-    }
-});
+// transporter.verify((error, success) => {
+//     if (error) {
+//         console.log('Email service error:', error);
+//     } else {
+//         console.log('Email service ready:', success);
+//     }
+// });
 
 // Send approval notification
 const sendApprovalNotification = async (to, subject, message) => {
@@ -64,7 +65,4 @@ const sendRejectionNotification = async (to, subject, message, rejectionReason) 
     }
 };
 
-module.exports = {
-    sendApprovalNotification,
-    sendRejectionNotification
-};
+export { sendApprovalNotification, sendRejectionNotification };

@@ -1,4 +1,4 @@
-const { WebClient } = require('@slack/web-api');
+import { WebClient } from '@slack/web-api';
 
 // Initialize the Slack client
 const slackClient = new WebClient(process.env.SLACK_BOT_TOKEN);
@@ -73,7 +73,4 @@ const sendRejectionNotification = async (ticket, user, reason) => {
     }
 };
 
-module.exports = {
-    sendApprovalNotification,
-    sendRejectionNotification
-};
+export { sendApprovalNotification, sendRejectionNotification };

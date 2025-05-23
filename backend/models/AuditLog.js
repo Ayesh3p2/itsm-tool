@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const auditLogSchema = new mongoose.Schema({
     userId: {
@@ -59,4 +59,4 @@ auditLogSchema.index({ ipAddress: 1, timestamp: -1 });
 // TTL index for automatic cleanup (keep logs for 90 days)
 auditLogSchema.index({ timestamp: 1 }, { expireAfterSeconds: 7776000 });
 
-module.exports = mongoose.model('AuditLog', auditLogSchema);
+export const AuditLog = mongoose.model('AuditLog', auditLogSchema);

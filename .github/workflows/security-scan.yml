@@ -10,34 +10,46 @@ jobs:
   security-scan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      
-      # Run Snyk security scan
-      - name: Run Snyk security scan
+      - uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Snyk scan
         uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           args: --severity-threshold=high
 
-      # Run OWASP Dependency Check
-      - name: Run OWASP Dependency Check
-        uses: dependency-check/dependency-check-action@v2
-        with:
-          path: .
-          format: 'HTML'
-          suppressionFile: 'suppression.xml'
-
-      # Run SonarQube
-      - name: Run SonarQube
-        uses: SonarSource/sonarcloud-github-action@master
+      - name: Run SonarQube scan
+        uses: SonarSource/sonarqube-scan-action@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
           SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
           SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
 
-      # Run Trivy for container scanning
+      - name: Run dependency check
+        uses: dependency-check/dependency-check-action@v3.1.0
+        with:
+          path: .
+          format: 'HTML'
+          scanPath: 'itsm-tool'
+          projectName: 'itsm-tool'
+          suppressionFile: 'dependency-check-suppression.xml'
+          outputDirectory: './reports'
+          failOnError: true
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+          skip-update: true
+          quiet: true
+
       - name: Run Trivy
         uses: aquasecurity/trivy-action@master
         with:
@@ -50,7 +62,6 @@ jobs:
           skip-update: true
           quiet: true
 
-      # Run CodeQL
       - name: Run CodeQL
         uses: github/codeql-action/analyze@v2
         with:

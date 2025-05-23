@@ -1,8 +1,8 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const auth = require('../middleware/auth');
-const User = require('../models/User');
-const Ticket = require('../models/Ticket');
+import auth from '../middleware/auth.js';
+import { User } from '../models/User.js';
+import { Ticket } from '../models/Ticket.js';
 
 // Get all users (admin only)
 router.get('/users', [auth, admin], async (req, res) => {
@@ -65,11 +65,11 @@ router.get('/tickets', [auth, admin], async (req, res) => {
 });
 
 // Admin middleware
-function admin(req, res, next) {
+const admin = (req, res, next) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ msg: 'Admin access required' });
   }
   next();
-}
+};
 
-module.exports = router;
+export { router as default, admin };

@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const security = require('../utils/security');
+import mongoose from 'mongoose';
+import { hashPassword, comparePassword } from '../utils/security.js';
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -82,7 +82,7 @@ const userSchema = new mongoose.Schema({
 });
 
 // Hash password before saving
-UserSchema.pre('save', async function(next) {
+userSchema.pre('save', async function(next) {
     if (!this.isModified('password')) {
         return next();
     }
@@ -96,7 +96,7 @@ UserSchema.pre('save', async function(next) {
 });
 
 // Method to compare password
-UserSchema.methods.comparePassword = async function(candidatePassword) {
+userSchema.methods.comparePassword = async function(candidatePassword) {
     try {
         const isMatch = await bcrypt.compare(candidatePassword, this.password);
         console.log('Password comparison result:', isMatch);
@@ -107,4 +107,4 @@ UserSchema.methods.comparePassword = async function(candidatePassword) {
     }
 };
 
-module.exports = mongoose.model('User', UserSchema);
+export const User = mongoose.model('User', userSchema);
