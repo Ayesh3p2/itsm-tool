@@ -29,7 +29,7 @@ jobs:
         run: npm test
 
       - name: Run dependency check
-        uses: dependency-check/dependency-check-action@v2.1.1
+        uses: actions/dependency-check@v2.1.1
         with:
           path: .
           format: 'HTML'
