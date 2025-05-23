@@ -36,7 +36,7 @@ jobs:
           SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
 
       - name: Run dependency check
-        uses: dependency-check/dependency-check-action@v3.1.0
+        uses: dependency-check/dependency-check-action@v2.1.1
         with:
           path: .
           format: 'HTML'
