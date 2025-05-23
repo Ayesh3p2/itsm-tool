@@ -35,20 +35,15 @@ jobs:
           SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
           SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
 
-      - name: Run dependency check
-        uses: actions/dependency-check@v2.1.1
+      - name: Run Trivy security scan
+        uses: aquasecurity/trivy-action@master
         with:
-          path: .
-          format: 'HTML'
-          scanPath: 'itsm-tool'
-          projectName: 'itsm-tool'
-          suppressionFile: 'dependency-check-suppression.xml'
-          outputDirectory: './reports'
-          failOnError: true
+          scan-type: 'fs'
+          format: 'template'
+          template: '@contrib/sarif.tpl'
+          output: './reports/trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
           exit-code: '1'
-          skip-update: true
-          quiet: true
 
       - name: Run Trivy
         uses: aquasecurity/trivy-action@master
